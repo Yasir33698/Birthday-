@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Happy Birthday — Areeba 🎉</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    /* ---------- Base ---------- */
+    :root{
+      --accent:#d63384;
+      --card-bg: rgba(255,255,255,0.9);
+    }
+    body{
+      margin:0;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%);
+      color:#333;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+    .container-lg{ padding-top:40px; padding-bottom:40px; }
+
+    /* ---------- Card ---------- */
+    .card-custom{
+      background:var(--card-bg);
+      border-radius:18px;
+      padding:28px;
+      box-shadow:0 10px 30px rgba(13,13,13,0.12);
+      text-align:center;
+    }
+
+    h1.title{
+      font-size:2rem;
+      margin-bottom:6px;
+      letter-spacing:0.3px;
+    }
+    .sub{ color:#6b6b6b; margin-bottom:18px; }
+
+    /* ---------- Cake ---------- */
+    #cake{
+      width:260px;
+      max-width:82%;
+      cursor:pointer;
+      transition: transform .18s ease;
+      border-radius:14px;
+      box-shadow:0 8px 20px rgba(0,0,0,0.15);
+    }
+    #cake:active{ transform:scale(.96); }
+
+    /* ---------- Popup ---------- */
+    #birthdayPrompt{
+      position:fixed; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,0.56); z-index:9998;
+      opacity:0; pointer-events:none; transition:opacity .35s ease;
+      backdrop-filter: blur(4px);
+    }
+    #birthdayPrompt.show{ opacity:1; pointer-events:all; }
+    .prompt-box{
+      width:92%; max-width:460px;
+      background:#fff; border-radius:18px; padding:26px; text-align:center;
+      transform:translateY(10px) scale(.98); opacity:0; transition:all .35s ease;
+    }
+    #birthdayPrompt.show .prompt-box{ transform:translateY(0) scale(1); opacity:1; }
+
+    .close-btn{
+      background:var(--accent); color:#fff; border:0; padding:10px 22px; border-radius:999px;
+      font-weight:600; margin-top:14px; box-shadow:0 6px 18px rgba(214,51,132,0.18);
+    }
+
+    /* ---------- Confetti Canvas ---------- */
+    #confettiCanvas{
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      pointer-events:none; z-index:9997; display:none;
+    }
+
+    /* ---------- Gallery ---------- */
+    .gallery .card{
+      border-radius:14px; overflow:hidden; border:0; box-shadow:0 10px 25px rgba(0,0,0,0.12);
+    }
+
+    .gallery img{ width:100%; height:220px; object-fit:cover; display:block; transition:transform .3s ease; }
+    .gallery img:hover{ transform:scale(1.03); }
+
+    /* ---------- Poetry ---------- */
+    .poetry-section{ padding:38px 12px; text-align:center; }
+    .poetry-box{
+      margin:12px auto; max-width:720px; background:var(--card-bg);
+      padding:18px; border-radius:12px; box-shadow:0 8px 18px rgba(0,0,0,0.08);
+      font-size:1.05rem; line-height:1.6em;
+    }
+
+    /* ---------- Gift Box & Message ---------- */
+    .gift-box{
+      display:inline-block; background:var(--card-bg); padding:18px; border-radius:16px;
+      cursor:pointer; transition:transform .25s ease, box-shadow .25s ease;
+      box-shadow:0 8px 18px rgba(0,0,0,0.12); text-align:center;
+    }
+    .gift-box:hover{ transform:translateY(-6px); box-shadow:0 18px 40px rgba(0,0,0,0.18); }
+    .tap-text{ color:var(--accent); font-weight:700; margin-top:10px; }
+
+    .special-message{
+      display:none; max-width:760px; margin:20px auto; padding:22px; border-radius:14px;
+      background:#fff; box-shadow:0 12px 28px rgba(0,0,0,0.14);
+      text-align:left;
+      animation:popIn .45s ease both;
+    }
+    @keyframes popIn { from { transform:scale(.96); opacity:0 } to { transform:scale(1); opacity:1; } }
+
+    /* ---------- Controls ---------- */
+    .music-control{
+      position:fixed; right:18px; bottom:18px; z-index:99999;
+      background:linear-gradient(90deg,#fff,#fff); border-radius:999px; padding:8px;
+      box-shadow:0 12px 30px rgba(0,0,0,0.14); display:flex; gap:8px; align-items:center;
+    }
+    .music-control button{
+      border:0; background:var(--accent); color:#fff; padding:8px 12px; border-radius:999px; cursor:pointer;
+      font-weight:600;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width:720px){
+      #cake{ width:200px; }
+      .poetry-box, .special-message{ padding:16px; font-size:1rem; }
+      .gallery img{ height:160px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Confetti Canvas -->
+<canvas id="confettiCanvas"></canvas>
+
+<!-- Popup -->
+<div id="birthdayPrompt">
+  <div class="prompt-box shadow">
+    <h3 style="margin-bottom:8px;">🎉 Happy birthday janan! 🎉</h3>
+    <p style="font-weight:600; color:var(--accent); font-size:1.1rem;">
+      Wishing you a Beautiful, Joyful & Amazing Birthday! 💖✨
+    </p>
+
+    <button class="close-btn" onclick="closePrompt()">OK</button>
+  </div>
+</div>
+
+<!-- Music (plays only after user interaction) -->
+<audio id="music" src="asstes/birthdat sound.mp3" preload="auto"></audio>
+<!-- Music Control -->
+<div class="music-control" title="Music controls">
+  <span style="font-weight:700; color:#444; padding-left:8px;">Music</span>
+  <button id="toggleMusic">Play</button>
+</div>
+
+<div class="container-lg">
+  <!-- Top card -->
+  <div class="row justify-content-center mb-4">
+    <div class="col-md-8">
+      <div class="card-custom">
+        <h1 class="title">🎉 Happy Birthday, <i>Areeba!🎉</i></h1>
+        <div class="sub">Click the cake !</div>
+
+        <!-- Replace `assets/cake.avif` with your cake image path -->
+        <img id="cake" src="asstes/cake.avif" alt="Birthday Cake" />
+
+        <!-- Gift box & special message -->
+        <div class="mt-4">
+          <div id="giftBox" class="gift-box">
+            <!-- You can replace the icon with any image or SVG -->
+            <img src="https://cdn-icons-png.flaticon.com/512/4208/4208394.png" width="140" alt="Gift box">
+            <div class="tap-text">Tap to Open 🎀</div>
+          </div>
+
+          <div id="specialMessage" class="special-message mt-3">
+            <h4 style="color:var(--accent); margin-top:0;">💌 A Special Message for Areeba</h4>
+            <p style="margin-bottom:0; font-size:1.05rem;">
+              Areeba — may your day be full of laughter, sweet surprises and warm moments.
+              You bring light to those around you. May this year bring you closer to your
+              dreams and fill your heart with endless joy. Happy Birthday! 🌸✨
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Poetry Section -->
+  <section id="poetry" class="poetry-section">
+    <h3 style="margin-bottom:12px;">✨ Beautiful Wishes & Poetry ✨</h3>
+
+    <div class="poetry-box">
+      <strong></strong>
+      <p style="margin-top:8px;">
+        Roshan rahe har subah tumhari,<br>
+        Meethi rahe har shaam tumhari.<br>
+        Janamdin ka yeh pyara sa din,<br>
+        Laye khushiyan hazaar tumhari. ✨
+      </p>
+    </div>
+
+    <div class="poetry-box">
+      <strong></strong>
+      <p style="margin-top:8px;">
+        Jitni khoobsurat ho tumhari muskaan,<br>
+        Utna hi pyara ho tumhara har armaan.<br>
+        Dua hai janamdin ke is din,<br>
+        Khushiyon ka rahe sada nishaan. 🌸
+      </p>
+    </div>
+
+  </section>
+</div>
+
+<!-- Scripts -->
+<script>
+  /* ---------- Elements ---------- */
+  const cake = document.getElementById('cake');
+  const promptBox = document.getElementById('birthdayPrompt');
+  const canvas = document.getElementById('confettiCanvas');
+  const music = document.getElementById('music');
+  const toggleMusicBtn = document.getElementById('toggleMusic');
+
+  const giftBox = document.getElementById('giftBox');
+  const specialMessage = document.getElementById('specialMessage');
+
+  /* ---------- Cake click: show popup, confetti and play music ---------- */
+  cake.addEventListener('click', () => {
+    promptBox.classList.add('show');
+    canvas.style.display = 'block';
+    startConfetti();
+    // try to play - will work if user interacted (click counts)
+    music.play().then(()=> toggleMusicBtn.textContent='Pause').catch(()=>{/* autoplay blocked */});
+  });
+
+  function closePrompt(){
+    promptBox.classList.remove('show');
+    canvas.style.display = 'none';
+    stopConfetti();
+    music.pause(); music.currentTime = 0;
+    toggleMusicBtn.textContent = 'Play';
+  }
+
+  /* ---------- Gift box click ---------- */
+  giftBox.addEventListener('click', () => {
+    // hide box and show message
+    giftBox.style.display = 'none';
+    specialMessage.style.display = 'block';
+    // small scroll to message for mobile
+    setTimeout(()=> specialMessage.scrollIntoView({behavior:'smooth', block:'center'}), 200);
+  });
+
+  /* ---------- Music toggle ---------- */
+  toggleMusicBtn.addEventListener('click', () => {
+    if (music.paused) {
+      music.play().then(()=> toggleMusicBtn.textContent='Pause').catch(()=> alert('Playback blocked by browser. Try clicking the cake first.'));
+    } else {
+      music.pause(); toggleMusicBtn.textContent='Play';
+    }
+  });
+
+  /* ---------- Simple Confetti (Canvas) ---------- */
+  const ctx = canvas.getContext('2d');
+  let pieces = [], w=0, h=0, animId=null;
+  const numberOfPieces = 120;
+
+  function resizeCanvas(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function initConfetti(){
+    pieces = [];
+    for (let i=0;i<numberOfPieces;i++){
+      pieces.push({
+        x: Math.random()*w,
+        y: Math.random()*h - h,
+        size: Math.random()*10 + 6,
+        speed: Math.random()*3 + 1.2,
+        rotation: Math.random()*360,
+        rotSpeed: (Math.random()-0.5)*6,
+        color: `hsl(${Math.random()*360}, 100%, 50%)`,
+      });
+    }
+  }
+
+  function updateConfetti(){
+    ctx.clearRect(0,0,w,h);
+    for (let p of pieces){
+      p.y += p.speed;
+      p.x += Math.sin(p.y*0.01)*1.2;
+      p.rotation += p.rotSpeed;
+      if (p.y > h + 20) { p.y = -20; p.x = Math.random()*w; }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
+      ctx.restore();
+    }
+    animId = requestAnimationFrame(updateConfetti);
+  }
+
+  function startConfetti(){
+    initConfetti();
+    if (!animId) updateConfetti();
+  }
+  function stopConfetti(){
+    if (animId){ cancelAnimationFrame(animId); animId = null; }
+    ctx.clearRect(0,0,w,h);
+  }
+
+  /* ---------- small improvement: close popup when clicking outside box ---------- */
+  promptBox.addEventListener('click', (e) => {
+    if (e.target === promptBox) closePrompt();
+  });
+
+  /* ---------- Helpful: keyboard escape closes popup ---------- */
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closePrompt();
+  });
+
+  /* ---------- Notes for user: console hints ---------- */
+  console.log("Birthday page ready. Replace images in the 'assets/' folder or change the <img src> paths.");
+</script>
+
+</body>
+</html>
